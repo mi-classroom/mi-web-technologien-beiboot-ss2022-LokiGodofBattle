@@ -64,7 +64,7 @@ function sortData(){
     return 0;
 });
 
-  data.items.filter(item => item.bestOF);
+  data.items = data.items.filter(item => item.isBestOf);
 }
 
 function gotolink() {
