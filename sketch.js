@@ -63,6 +63,8 @@ function sortData(){
     }
     return 0;
 });
+
+  data.items.filter(item => item.bestOF);
 }
 
 function gotolink() {
