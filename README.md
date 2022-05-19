@@ -6,4 +6,6 @@ Als organisatorischen Rahmen für das Projekt nutzen wir GitHub Classroom. Inhal
 
 Von Luca Stamos
 
-Docker Container mit dem Projekt verfügbar unter lazyloki/beiboot
+Docker Container ist auch verfügbar:
+
+sudo docker run -p 8080:80 -d --name Beiboot-test lazyloki/beiboot
