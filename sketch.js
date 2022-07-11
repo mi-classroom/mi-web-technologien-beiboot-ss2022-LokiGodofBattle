@@ -1,5 +1,4 @@
 
-
 // calculate height for the plane
       const calculateHeight = (element) => {
             const split = element.dimensions.replace(/[\])}[{(]/g, ' ').split(' ');
@@ -60,8 +59,11 @@
           };
 
 
+		 
 let data;
 
+let objects = [];
+let objectsDim = []
 let yearToIndex = [];
 let dataByYear = [];
 
@@ -226,6 +228,9 @@ function drawTimeline() {
 	let pictureDistance = 5;
 	let buffer = 5;
 	
+	objects = []
+	objectsDim = []
+	
 	for(let i = 0; i<dataByYear.length; i++){
 		
 		yearArray = dataByYear[i];
@@ -240,18 +245,22 @@ function drawTimeline() {
 		text(yearToIndex.indexOf(i), 0, 0);
 		pop();
 		
-		for(let j = 0; j<yearArray.length; j++){
+		for(let j = 0; j<1; j++){
 			
 			let width = yearArray[j][2];
 			let height = yearArray[j][3];
 			
-			let x = j*pictureDistance+buffer;
-			let y = i*yearDistance;
+			let y = j*pictureDistance+buffer;
+			let x = i*yearDistance;
 			
-			if(i%2 == 0) x *= -1;
+			if(i%2 == 0) y *= -1;
 			
 			let p = createVector(y, 0, x);
-			if(p5.Vector.dist(p, player.position) <= 100) drawPicture(yearArray[j][0], yearArray[j][1], width, height, x, y);
+			if(p5.Vector.dist(p, player.position) <= 100){
+				drawPicture(yearArray[j][0], yearArray[j][1], width, height, x, y);
+				objects.push(new IntersectPlane(1, 0, 0, -x, 0, y));
+				objectsDim.push([x, y, width, height]);
+			}
 			
 			
 		}
@@ -265,6 +274,42 @@ function drawTimeline() {
 		pop()
 	}
 	
+	  x = cos(player.pan)*cos(player.tilt);
+	  y = sin(player.pan)*cos(player.tilt);
+	  z = sin(player.tilt);
+
+	
+	  const Q = createVector(player.position.x, player.position.y, player.position.z); // A point on the ray and the default position of the camera.
+	  const v = createVector(x, z, y); // The direction vector of the ray.
+
+	  let intersect = createVector(0, 0, 0); // The point of intersection between the ray and a plane.
+	  let closestLambda = 100000000; // The draw distance.
+
+	  for (let x = 0; x < objects.length; x += 1) {
+		let object = objects[x];
+		let lambda = object.getLambda(Q, v); // The value of lambda where the ray intersects the object
+		print(lambda);
+
+		if (lambda < closestLambda && lambda > 0) {
+		  // Find the position of the intersection of the ray and the object.
+		  preIntersect = p5.Vector.add(Q, p5.Vector.mult(v, lambda));
+		  dims = objectsDim[x];
+		  
+		  if(preIntersect.z >= dims[1]-dims[2]/2 && preIntersect.z <= dims[1]+dims[2]/2 && preIntersect.y >= -dims[3]/2-2 && preIntersect.y <= dims[3]/2-2){
+			intersect = preIntersect.copy();  
+			closestLambda = lambda;
+		  }
+		}
+	  }
+	
+	
+		push();
+		noStroke();
+		fill(255, 0 ,0);
+		translate(intersect.x, intersect.y, intersect.z);
+		sphere(0.1);
+		pop(); 
+	
 	push();
 	noStroke();
 	translate(dataByYear.length*yearDistance/2, 2, 0);
@@ -276,7 +321,7 @@ function drawTimeline() {
 function drawPicture(id, img, width, height, posx, posy){
 	
 	push();
-	translate(posy, -2, posx);
+	translate(posx, -2, posy);
 	rotateY(-PI/2);
 	push();
 	texture(img);
@@ -311,7 +356,17 @@ function mouseClicked() {
   }
 }
 
+class IntersectPlane {
+  constructor(n1, n2, n3, p1, p2, p3) {
+    this.normal = createVector(n1, n2, n3); // The normal vector of the plane
+    this.point = createVector(p1, p2, p3); // A point on the plane
+    this.d = this.point.dot(this.normal);
+  }
 
+  getLambda(Q, v) {
+    return (-this.d - this.normal.dot(Q)) / this.normal.dot(v);
+  }
+}
 
 
 
