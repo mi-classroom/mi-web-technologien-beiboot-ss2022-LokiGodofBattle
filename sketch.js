@@ -63,6 +63,7 @@
 let data;
 
 let objects = [];
+let referenced;
 let objectsDim = []
 let yearToIndex = [];
 let dataByYear = [];
@@ -245,7 +246,7 @@ function drawTimeline() {
 		text(yearToIndex.indexOf(i), 0, 0);
 		pop();
 		
-		for(let j = 0; j<1; j++){
+		for(let j = 0; j<yearArray.length; j++){
 			
 			let width = yearArray[j][2];
 			let height = yearArray[j][3];
@@ -255,10 +256,10 @@ function drawTimeline() {
 			
 			if(i%2 == 0) y *= -1;
 			
-			let p = createVector(y, 0, x);
-			if(p5.Vector.dist(p, player.position) <= 100){
+			let p = createVector(x, 0, y);
+			if(p5.Vector.dist(p, player.position) <= 100 && (referenced == undefined || referenced.includes(yearArray[j][0]))){ //EDIT HERE!!!
 				drawPicture(yearArray[j][0], yearArray[j][1], width, height, x, y);
-				objects.push(new IntersectPlane(1, 0, 0, -x, 0, y));
+				objects.push([i, j, new IntersectPlane(1, 0, 0, -x, 0, y)]);
 				objectsDim.push([x, y, width, height]);
 			}
 			
@@ -286,9 +287,8 @@ function drawTimeline() {
 	  let closestLambda = 100000000; // The draw distance.
 
 	  for (let x = 0; x < objects.length; x += 1) {
-		let object = objects[x];
+		let object = objects[x][2];
 		let lambda = object.getLambda(Q, v); // The value of lambda where the ray intersects the object
-		print(lambda);
 
 		if (lambda < closestLambda && lambda > 0) {
 		  // Find the position of the intersection of the ray and the object.
@@ -298,6 +298,19 @@ function drawTimeline() {
 		  if(preIntersect.z >= dims[1]-dims[2]/2 && preIntersect.z <= dims[1]+dims[2]/2 && preIntersect.y >= -dims[3]/2-2 && preIntersect.y <= dims[3]/2-2){
 			intersect = preIntersect.copy();  
 			closestLambda = lambda;
+			
+			if (keyIsPressed && key == 'r') {
+				id = dataByYear[objects[x][0]][objects[x][1]][0];
+				referenced = [];
+				referenced.push(id);
+				for (let k=0; k<data.items.length; k++) {
+					for(let l=0; l<data.items[id].references.length; l++){
+						if(data.items[id].references[l].inventoryNumber == data.items[k].inventoryNumber){
+							referenced.push(k);
+						}
+					}
+				}
+			}
 		  }
 		}
 	  }
@@ -315,6 +328,10 @@ function drawTimeline() {
 	translate(dataByYear.length*yearDistance/2, 2, 0);
 	box(dataByYear.length*yearDistance, 0.1, 0.1);
 	pop();
+	
+	if (keyIsPressed && key == 't') {
+		referenced = undefined;
+	}
 	
 }
 
