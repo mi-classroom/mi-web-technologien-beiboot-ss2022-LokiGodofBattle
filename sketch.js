@@ -283,7 +283,7 @@ function drawTimeline() {
 	  const Q = createVector(player.position.x, player.position.y, player.position.z); // A point on the ray and the default position of the camera.
 	  const v = createVector(x, z, y); // The direction vector of the ray.
 
-	  let intersect = createVector(0, 0, 0); // The point of intersection between the ray and a plane.
+	  let intersect; // The point of intersection between the ray and a plane.
 	  let closestLambda = 100000000; // The draw distance.
 
 	  for (let x = 0; x < objects.length; x += 1) {
@@ -315,13 +315,14 @@ function drawTimeline() {
 		}
 	  }
 	
-	
-		push();
-		noStroke();
-		fill(255, 0 ,0);
-		translate(intersect.x, intersect.y, intersect.z);
-		sphere(0.1);
-		pop(); 
+		if(intersect != undefined){
+			push();
+			noStroke();
+			fill(255, 0 ,0);
+			translate(intersect.x, intersect.y, intersect.z);
+			sphere(0.1);
+			pop(); 
+		}
 	
 	push();
 	noStroke();
